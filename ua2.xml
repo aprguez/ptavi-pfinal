@@ -1,8 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
 <config>
-      <account username = ""  passwd = "" />
-      <uaserver ip = "" puerto ="" />
-      <rtpaudio puerto = ""/>
-      <regproxy ip = "" puerto = ""/>
-      <log path = "" />
-      <audio path = "" />
+	<account username = "anakin@sw.org" passwd = "vader"/>
+	<uaserver ip = "127.0.0.1" puerto ="5061"/>
+	<rtpaudio puerto = "33032"/>
+	<regproxy ip = "127.0.0.1" puerto ="5556"/>
+	<log path = "./log_2.txt" />
+	<audio path = "./cancion.mp3" />
 </config>
