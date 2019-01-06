@@ -25,7 +25,7 @@ if len(sys.argv) == 4:
     METODO = sys.argv[2]
     OPCION = sys.argv[3]
 else:
-    sys.exit("Usage: client.py config method opcion")
+    sys.exit("Usage: uaclient.py config method opcion")
 
 def log(formato, hora, evento):
     fich = listaXML[4][1]['path']
@@ -108,7 +108,7 @@ evento += LINE
 log('', hora, evento)
 print("Enviando: " + LINE)
 my_socket.send(bytes(LINE, 'utf-8'))
-data = my_socket.recv(PROXY_PORT)
+data = my_socket.recv(1024)
 
 print('Recibido -- ', data.decode('utf-8'))
 datosrecibidos = data.decode('utf-8')
