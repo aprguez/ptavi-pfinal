@@ -41,3 +41,44 @@ class ExtraerXML (ContentHandler):
 
     def get_tags(self):
         return self.taglist
+
+parser = make_parser()
+XMLHandler = ExtraerXML()
+parser.setContentHandler(XMLHandler)
+parser.parse(open(XML))
+listaXML = XMLHandler.get_tags()
+NAME = listaXML[0][1]['username']
+passwd = listaXML[0][1]['passwd']
+UA_PORT = listaXML[1][1]['puerto']
+UA_IP = listaXML[1][1]['ip']
+
+if UA_IP == "":
+    UA_IP = '127.0.0.1'
+
+def log(formato, hora, evento):
+    fich = listaXML[4][1]['path']
+    fich_log = open(fich, 'a')
+    hora = time.gmtime(hora)
+    evento = evento.replace('\r\n', ' ')
+    fich_log.write(evento + '\r\n')
+    fich_log.close()
+
+class SIPRegisterHandler(SocketServer.DatagramRequestHandler):
+    """Register SIP"""
+
+    dicc_user = {}
+    
+        def register2file(self):
+        """Escribe en el fichero el diccionario"""
+        fichero = "registered.txt"
+        fichero = open(fichero, "w")
+        cadena = "User\tIP\tPort\tRegistered\tExpires\r\n"
+        for user in self.dicc_user.keys():
+            expires = self.dicc_user[user][3]
+            ip = self.dicc_user[user][0]
+            port = self.dicc_user[user][1]
+            seg_1970_reg = self.dicc_user[user][2]
+            cadena += (user + "\t" + ip + "\t" + str(port) + "\t" +
+                       str(seg_1970_reg) + "\t" + str(expires) + "\r\n")
+        fichero.write(cadena)
+        fichero.close
