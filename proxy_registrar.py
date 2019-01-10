@@ -19,6 +19,7 @@ if len(sys.argv) == 2:
 else:
     sys.exit('Usage: python3 uaserver.py config')
 
+
 class ExtraerXML (ContentHandler):
     def __init__(self):
         self.taglist = []
@@ -42,6 +43,7 @@ class ExtraerXML (ContentHandler):
     def get_tags(self):
         return self.taglist
 
+
 parser = make_parser()
 XMLHandler = ExtraerXML()
 parser.setContentHandler(XMLHandler)
@@ -55,6 +57,7 @@ UA_IP = listaXML[1][1]['ip']
 if UA_IP == "":
     UA_IP = '127.0.0.1'
 
+
 def log(formato, hora, evento):
     fich = listaXML[4][1]['path']
     fich_log = open(fich, 'a')
@@ -63,11 +66,12 @@ def log(formato, hora, evento):
     fich_log.write(evento + '\r\n')
     fich_log.close()
 
+
 class SIPRegisterHandler(socketserver.DatagramRequestHandler):
     """Register SIP"""
 
     dicc_user = {}
-    
+
     def register2file(self):
         """
         Método que imprime en un fichero el contenido del diccionario
@@ -84,7 +88,7 @@ class SIPRegisterHandler(socketserver.DatagramRequestHandler):
                        str(seg_1970_reg) + "\t" + str(expires) + "\r\n")
         fichero.write(cadena)
         fichero.close
-    
+
     def handle(self):
         """
         Metodo handle
@@ -123,48 +127,48 @@ class SIPRegisterHandler(socketserver.DatagramRequestHandler):
                 if expires == "0":
                     del self.dicc_user[(dir_sip)]
                 self.register2file()
-            
+
             elif metodo[0] == "INVITE":
-                 evento = " Received from " + IP + ":"
-                 evento += str(PORT) + ": " + line
-                 log("", hora, evento)
-                 destino = metodo[1]
-                 destino = destino.split(":")
-                 destino_sip = destino[1]
-                 destino_port = ""
-                 destino_ip = ""
-                 exito = False
-                 for user in self.dicc_user.keys():
-                     if user == destino_sip:
-                         destino_port = self.dicc_user[destino_sip][1]
-                         destino_ip = self.dicc_user[destino_sip][0]
-                         exito = True
-                 if exito:
-                     my_socket = socket.socket(socket.AF_INET,
+                evento = " Received from " + IP + ":"
+                evento += str(PORT) + ": " + line
+                log("", hora, evento)
+                destino = metodo[1]
+                destino = destino.split(":")
+                destino_sip = destino[1]
+                destino_port = ""
+                destino_ip = ""
+                exito = False
+                for user in self.dicc_user.keys():
+                    if user == destino_sip:
+                        destino_port = self.dicc_user[destino_sip][1]
+                        destino_ip = self.dicc_user[destino_sip][0]
+                        exito = True
+                if exito:
+                    my_socket = socket.socket(socket.AF_INET,
                                               socket.SOCK_DGRAM)
-                     my_socket.setsockopt(socket.SOL_SOCKET,
+                    my_socket.setsockopt(socket.SOL_SOCKET,
                                          socket.SO_REUSEADDR, 1)
-                     my_socket.connect((destino_ip, int(destino_port)))
-                     print("CONECTADO")
-                     my_socket.send(line)
-                     evento = " Sent to " + destino_ip + ":"
-                     evento += destino_port + ": " + line
-                     log("", hora, evento)
-                     data = my_socket.recv(1024)
-                     evento = " Received from " + destino_ip + ":"
-                     evento += destino_port + ": " + data
-                     log("", hora, evento)
-                     print(data)
-                     self.wfile.write(data)
-                     evento = " Sent to " + IP + ":"
-                     evento += str(PORT) + ": " + data
-                     log("", hora, evento)
-                     my_socket.close
-                 else:
+                    my_socket.connect((destino_ip, int(destino_port)))
+                    print("CONECTADO")
+                    my_socket.send(line)
+                    evento = " Sent to " + destino_ip + ":"
+                    evento += destino_port + ": " + line
+                    log("", hora, evento)
+                    data = my_socket.recv(1024)
+                    evento = " Received from " + destino_ip + ":"
+                    evento += destino_port + ": " + data
+                    log("", hora, evento)
+                    print(data)
+                    self.wfile.write(data)
+                    evento = " Sent to " + IP + ":"
+                    evento += str(PORT) + ": " + data
+                    log("", hora, evento)
+                    my_socket.close
+                else:
                     evento = " Error: SIP/2.0 404 User Not Found"
                     log("", hora, evento)
                     self.wfile.write("SIP/2.0 404 User Not Found\r\n\r\n")
-          
+
             elif metodo[0] == "BYE" or metodo[0] == "ACK":
                 evento = " Received from " + IP + ":"
                 evento += str(PORT) + ": " + line
@@ -181,7 +185,6 @@ class SIPRegisterHandler(socketserver.DatagramRequestHandler):
                         destino_ip = self.dicc_user[destino_sip][0]
                         exito = True
                 if exito:
-                    #ABRIR SOCKET Y ENVIAR
                     print("REENVIAMOS 200 OK")
                     my_socket = socket.socket(socket.AF_INET,
                                               socket.SOCK_DGRAM)
@@ -211,6 +214,7 @@ class SIPRegisterHandler(socketserver.DatagramRequestHandler):
                 evento = " Sent to " + IP + ":"
                 evento += str(PORT) + ": " + line
                 log("", hora, evento)
+
 
 if __name__ == "__main__":
     serv = socketserver.UDPServer((UA_IP, int(UA_PORT)),
