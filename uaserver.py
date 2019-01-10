@@ -19,6 +19,7 @@ if len(sys.argv) == 2:
 else:
     sys.exit('Usage: python3 uaserver.py config')
 
+
 class ExtraerXML (ContentHandler):
     def __init__(self):
         self.taglist = []
@@ -42,6 +43,7 @@ class ExtraerXML (ContentHandler):
     def get_tags(self):
         return self.taglist
 
+
 parser = make_parser()
 XMLHandler = ExtraerXML()
 parser.setContentHandler(XMLHandler)
@@ -59,6 +61,7 @@ fich_audio = listaXML[5][1]['path']
 if UA_IP == "":
     UA_IP = '127.0.0.1'
 
+
 def log(formato, hora, evento):
     fich = listaXML[4][1]['path']
     fich_log = open(fich, 'a')
@@ -66,6 +69,7 @@ def log(formato, hora, evento):
     evento = evento.replace('\r\n', ' ')
     fich_log.write(evento + '\r\n')
     fich_log.close()
+
 
 class Server_Sip(socketserver.DatagramRequestHandler):
     RECEPTOR = {'IP': "", "PORT": 0}
@@ -86,7 +90,7 @@ class Server_Sip(socketserver.DatagramRequestHandler):
                 print(self.receptor["IP"])
                 print(self.receptor["PORT"])
                 ENVIO = ("SIP/2.0 100 Trying\r\n\r\nSIP/2.0 180 Ringing"
-                           "\r\n\r\nSIP/2.0 200 OK\r\n")
+                         "\r\n\r\nSIP/2.0 200 OK\r\n")
                 ENVIO += "Content-type: application/sdp\r\n\r\n"
                 ENVIO += "v=0\r\n" + "o=" + NAME + " "
                 ENVIO += UA_IP + "\r\n" + "s=finalptavi\r\n" + "t=0\r\n"
@@ -95,7 +99,7 @@ class Server_Sip(socketserver.DatagramRequestHandler):
                 evento = " Received from " + PROXY_IP + ":"
                 evento += str(PROXY_PORT) + ": " + mensaje
                 log('', hora, evento)
-                evento= " Sent to " + self.receptor["IP"] + ":"
+                evento = " Sent to " + self.receptor["IP"] + ":"
                 evento += self.receptor["PORT"] + ": " + ENVIO
                 log('', hora, evento)
             elif line[0] == "ACK":
@@ -133,6 +137,7 @@ class Server_Sip(socketserver.DatagramRequestHandler):
                 evento = " Received from " + PROXY_IP + ":"
                 evento += str(PROXY_PORT) + ": " + mensaje
                 log('', hora, evento)
+
 
 if __name__ == "__main__":
     serv = socketserver.UDPServer((UA_IP, int(UA_PORT)), Server_Sip)
