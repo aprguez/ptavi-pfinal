@@ -62,9 +62,6 @@ PROXY_IP = listaXML[3][1]['ip']
 PROXY_PORT = int(listaXML[3][1]['puerto'])
 fich_audio = listaXML[5][1]['path']
 
-if UA_IP == "":
-    UA_IP = '127.0.0.1'
-
 
 def log(formato, hora, evento):
     fich = listaXML[4][1]['path']
@@ -121,7 +118,7 @@ try:
         log("", hora, evento)
 
     print('Recibido...', data)
-    RECIBIDO = data.split('\r\n')
+    RECIBIDO = data.split()
     print(RECIBIDO)
     if len(RECIBIDO) == 14:
         evento = " Received from " + str(PROXY_IP) + ":" + str(PROXY_PORT)
