@@ -1,5 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
 <config>
-    <server name="ServidorAlex" ip="127.0.0.1" puerto="5555"></server>
-    <database path="ua1.xml, ua2.xml" passwdpath="passwd.txt"></database> 
-    <log path="./logpr.txt"></log> 
+      <server name = "ServidorAlex" ip = "localhost" puerto = "5555" />
+      <database path = "ua1.xml, ua2.xml" passwdpath = "passwords.txt" />
+      <log path = "./logpr.txt"/>
 </config>
