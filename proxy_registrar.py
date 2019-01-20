@@ -11,33 +11,47 @@ import socket
 import sys
 import time
 
+
 from xml.sax import make_parser
 from xml.sax.handler import ContentHandler
+
+
+def log(formato, hora, evento):
+    fich = listaXML[2][1]['path']
+    fich_log = open(fich, 'a')
+    hora = time.gmtime(hora)
+    evento = evento.replace('\r\n', ' ')
+    fich_log.write(evento + '\r\n')
+    fich_log.close()
+
 
 if len(sys.argv) == 2:
     XML = sys.argv[1]
 else:
-    sys.exit('Usage: python3 uaserver.py config')
+    sys.exit('Usage: python3 proxy_registrar.py config')
 
 
 class ExtraerXML (ContentHandler):
     def __init__(self):
         self.taglist = []
         self.tags = [
-            'account', 'uaserver', 'rtpaudio', 'regproxy', 'log', 'audio']
+            'server', 'database', 'log']
         self.diccattributes = {
-            'account': ['username', 'passwd'],
-            'uaserver': ['ip', 'puerto'],
-            'rtpaudio': ['puerto'],
-            'regproxy': ['ip', 'puerto'],
-            'log': ['path'],
-            'audio': ['path']}
+            'server': ['name', 'ip', 'puerto'],
+            'database': ['path', 'passwdpath'],
+            'log': ['path']}
 
     def startElement(self, tag, attrs):
-        dictionary = {}
         if tag in self.tags:
+            dictionary = {}
             for attribute in self.diccattributes[tag]:
-                dictionary[attribute] = attrs.get(attribute, "")
+                if attribute == 'ip':
+                    dictionary[attribute] = attrs.get(attribute, "")
+                    ip_server = dictionary[attribute]
+                    if ip_server == "":
+                        ip_server = "127.0.0.1"
+                else:
+                    dictionary[attribute] = attrs.get(attribute, "")
             self.taglist.append([tag, dictionary])
 
     def get_tags(self):
@@ -49,22 +63,9 @@ XMLHandler = ExtraerXML()
 parser.setContentHandler(XMLHandler)
 parser.parse(open(XML))
 listaXML = XMLHandler.get_tags()
-NAME = listaXML[0][1]['username']
-passwd = listaXML[0][1]['passwd']
-UA_PORT = listaXML[1][1]['puerto']
-UA_IP = listaXML[1][1]['ip']
-
-if UA_IP == "":
-    UA_IP = '127.0.0.1'
-
-
-def log(formato, hora, evento):
-    fich = listaXML[4][1]['path']
-    fich_log = open(fich, 'a')
-    hora = time.gmtime(hora)
-    evento = evento.replace('\r\n', ' ')
-    fich_log.write(evento + '\r\n')
-    fich_log.close()
+NAME = listaXML[0][1]['name']
+UA_PORT = int(listaXML[0][1]['puerto'])
+UA_IP = listaXML[0][1]['ip']
 
 
 class SIPRegisterHandler(socketserver.DatagramRequestHandler):
@@ -95,18 +96,17 @@ class SIPRegisterHandler(socketserver.DatagramRequestHandler):
         """
         while 1:
             line = self.rfile.read()
-            print(line)
             if not line:
                 break
-            metodo = line.split()
             print("RECIBIDO" + line)
+            metodo = line.split()
             IP = self.client_address[0]
             PORT = self.client_address[1]
             if metodo[0] == "REGISTER":
                 hora = time.time()
                 evento = " Received from " + IP + ":"
                 evento += str(PORT) + ": " + line
-                log("", hora, evento)
+                log("", evento)
                 direccion = metodo[1]
                 direccion = direccion.split(":")
                 print(direccion)
@@ -123,7 +123,7 @@ class SIPRegisterHandler(socketserver.DatagramRequestHandler):
                 self.wfile.write("SIP/2.0 200 OK\r\n\r\n")
                 evento = " Sent to " + IP + ":"
                 evento += str(PORT) + ": " + RESPUESTA
-                log("", hora, evento)
+                log("", evento)
                 if expires == "0":
                     del self.dicc_user[(dir_sip)]
                 self.register2file()
@@ -131,7 +131,7 @@ class SIPRegisterHandler(socketserver.DatagramRequestHandler):
             elif metodo[0] == "INVITE":
                 evento = " Received from " + IP + ":"
                 evento += str(PORT) + ": " + line
-                log("", hora, evento)
+                log("", evento)
                 destino = metodo[1]
                 destino = destino.split(":")
                 destino_sip = destino[1]
@@ -153,11 +153,11 @@ class SIPRegisterHandler(socketserver.DatagramRequestHandler):
                     my_socket.send(line)
                     evento = " Sent to " + destino_ip + ":"
                     evento += destino_port + ": " + line
-                    log("", hora, evento)
+                    log("", evento)
                     data = my_socket.recv(1024)
                     evento = " Received from " + destino_ip + ":"
                     evento += destino_port + ": " + data
-                    log("", hora, evento)
+                    log("", evento)
                     print(data)
                     self.wfile.write(data)
                     evento = " Sent to " + IP + ":"
@@ -166,13 +166,13 @@ class SIPRegisterHandler(socketserver.DatagramRequestHandler):
                     my_socket.close
                 else:
                     evento = " Error: SIP/2.0 404 User Not Found"
-                    log("", hora, evento)
+                    log("", evento)
                     self.wfile.write("SIP/2.0 404 User Not Found\r\n\r\n")
 
             elif metodo[0] == "BYE" or metodo[0] == "ACK":
                 evento = " Received from " + IP + ":"
                 evento += str(PORT) + ": " + line
-                log("", hora, evento)
+                log("", evento)
                 destino = metodo[1]
                 destino = destino.split(":")
                 destino_sip = destino[1]
@@ -195,7 +195,7 @@ class SIPRegisterHandler(socketserver.DatagramRequestHandler):
                     my_socket.send(line)
                     evento = " Sent to " + destino_ip + ":"
                     evento += destino_port + ": " + line
-                    log("", hora, evento)
+                    log("", evento)
                     data = my_socket.recv(1024)
                     print(data)
                     self.wfile.write(data)
@@ -206,20 +206,20 @@ class SIPRegisterHandler(socketserver.DatagramRequestHandler):
                 self.wfile.write("SIP/2.0 405 Method Not Allowed\r\n\r\n")
                 evento = " Sent to " + IP + ":"
                 evento += str(PORT) + ": " + line
-                log("", hora, evento)
+                log("", evento)
             else:
                 evento = " Error: " + "SIP/2.0 400 Bad Request"
-                log("", hora, evento)
+                log("", evento)
                 self.wfile.write("SIP/2.0 400 Bad Request\r\n\r\n")
                 evento = " Sent to " + IP + ":"
                 evento += str(PORT) + ": " + line
-                log("", hora, evento)
+                log("", evento)
 
 
 if __name__ == "__main__":
     serv = socketserver.UDPServer((UA_IP, int(UA_PORT)),
                                   SIPRegisterHandler)
-    print("Servidor Proxy-Registrar conectado...")
+    print("Server ServidorAlex listening at port 7055...")
     serv.allow_reuse_address = True
     serv.serve_forever()
     serv.close()
