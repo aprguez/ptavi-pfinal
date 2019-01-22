@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 """
 Created on Wed Jan  9 03:44:22 2019
-
 @author: gugom
 """
 
@@ -96,9 +95,10 @@ class SIPRegisterHandler(socketserver.DatagramRequestHandler):
         """
         while 1:
             line = self.rfile.read()
+            print(line)
             if not line:
                 break
-            print("RECIBIDO")
+            print("RECIBIDO: \n" + line.decode('utf-8'))
             metodo = line.split()
             IP = self.client_address[0]
             PORT = self.client_address[1]
@@ -200,26 +200,12 @@ class SIPRegisterHandler(socketserver.DatagramRequestHandler):
                     print(data)
                     self.wfile.write(data)
                     my_socket.close
-            elif metodo[0] == "CANCEL" or metodo[0] == "OPTIONS":
-                evento = " Error: SIP/2.0 405 Method Not Allowed"
-                log("", evento)
-                self.wfile.write("SIP/2.0 405 Method Not Allowed\r\n\r\n")
-                evento = " Sent to " + IP + ":"
-                evento += str(PORT) + ": " + line
-                log("", evento)
-            else:
-                evento = " Error: " + "SIP/2.0 400 Bad Request"
-                log("", evento)
-                self.wfile.write("SIP/2.0 400 Bad Request\r\n\r\n")
-                evento = " Sent to " + IP + ":"
-                evento += str(PORT) + ": " + line
-                log(evento)
 
 
 if __name__ == "__main__":
     serv = socketserver.UDPServer((UA_IP, int(UA_PORT)),
                                   SIPRegisterHandler)
-    print("Server ServidorAlex listening at port 7055...")
+    print("Server ServidorAlex listening at port 5555...")
     serv.allow_reuse_address = True
     serv.serve_forever()
     serv.close()
