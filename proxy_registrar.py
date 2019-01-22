@@ -89,6 +89,7 @@ class SIPRegisterHandler(socketserver.DatagramRequestHandler):
         fichero.write(cadena)
         fichero.close
 
+
     def handle(self):
         """
         Metodo handle
